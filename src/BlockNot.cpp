@@ -18,187 +18,95 @@
  * Global Variables
  */
 
-BlockNot *BlockNot::firstTimer = nullptr;
+BlockNot *BlockNot::firstTimer   = nullptr;
 BlockNot *BlockNot::currentTimer = nullptr;
-BlockNotGlobal BlockNot::global = GLOBAL_RESET;
+BlockNotGlobal BlockNot::global  = GLOBAL_RESET;
 
 /**
  * Constructors
  */
 
 BlockNot::BlockNot() {
-    baseUnits = MILLISECONDS;
+    baseUnits  = MILLISECONDS;
     timerState = RUNNING;
-    global = (global == NO_GLOBAL_RESET) ? NO_GLOBAL_RESET : GLOBAL_RESET;
+    global     = (global == NO_GLOBAL_RESET) ? NO_GLOBAL_RESET : GLOBAL_RESET;
     if (global == GLOBAL_RESET) addToTimerList();
 }
 
 BlockNot::BlockNot(const unsigned long milliseconds) {
-    baseUnits = MILLISECONDS;
-    timerState = RUNNING;
-    global = (global == NO_GLOBAL_RESET) ? NO_GLOBAL_RESET : GLOBAL_RESET;
-    initDuration(milliseconds);
-    reset();
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(milliseconds, MILLISECONDS, RUNNING, false, 0, false, GLOBAL_RESET);
 }
 
 BlockNot::BlockNot(const unsigned long milliseconds, const BlockNotState state) {
-    baseUnits = MILLISECONDS;
-    timerState = state;
-    global = (global == NO_GLOBAL_RESET) ? NO_GLOBAL_RESET : GLOBAL_RESET;
-    if(timerState == STOPPED)
-        stop();
-    initDuration(milliseconds);
-    reset();
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(milliseconds, MILLISECONDS, state, false, 0, false, GLOBAL_RESET);
 }
 
 BlockNot::BlockNot(const unsigned long time, const BlockNotUnit units = MILLISECONDS) {
-    baseUnits = units;
-    timerState = RUNNING;
-    global = (global == NO_GLOBAL_RESET) ? NO_GLOBAL_RESET : GLOBAL_RESET;
-    initDuration(time);
-    reset();
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(time, units, RUNNING, false, 0, false, GLOBAL_RESET);
 }
 
 BlockNot::BlockNot(const unsigned long time, const BlockNotUnit units, const BlockNotState state) {
-    baseUnits = units;
-    timerState = state;
-    global = (global == NO_GLOBAL_RESET) ? NO_GLOBAL_RESET : GLOBAL_RESET;
-    if(timerState == STOPPED)
-        stop();
-    initDuration(time);
-    reset();
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(time, units, state, false, 0, false, GLOBAL_RESET);
 }
 
 BlockNot::BlockNot(const unsigned long milliseconds, const BlockNotGlobal globalReset) {
-    baseUnits = MILLISECONDS;
-    timerState = RUNNING;
-    initDuration(milliseconds);
-    reset();
-    global = globalReset;
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(milliseconds, MILLISECONDS, RUNNING, false, 0, true, globalReset);
 }
 
 BlockNot::BlockNot(const unsigned long milliseconds, const BlockNotState state, const BlockNotGlobal globalReset) {
-    baseUnits = MILLISECONDS;
-    timerState = state;
-    if(timerState == STOPPED)
-        stop();
-    initDuration(milliseconds);
-    reset();
-    global = globalReset;
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(milliseconds, MILLISECONDS, state, false, 0, true, globalReset);
 }
 
 BlockNot::BlockNot(const unsigned long time, const BlockNotUnit units, const BlockNotGlobal globalReset) {
-    baseUnits = units;
-    timerState = RUNNING;
-    initDuration(time);
-    reset();
-    global = globalReset;
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(time, units, RUNNING, false, 0, true, globalReset);
 }
 
 BlockNot::BlockNot(const unsigned long time, const BlockNotUnit units, const BlockNotState state, const BlockNotGlobal globalReset) {
-    baseUnits = units;
-    timerState = state;
-    if(timerState == STOPPED)
-        stop();
-    initDuration(time);
-    reset();
-    global = globalReset;
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(time, units, state, false, 0, true, globalReset);
 }
 
 BlockNot::BlockNot(const unsigned long milliseconds, const unsigned long stoppedReturnValue) {
-    baseUnits = MILLISECONDS;
-    timerState = RUNNING;
-    global = (global == NO_GLOBAL_RESET) ? NO_GLOBAL_RESET : GLOBAL_RESET;
-    initDuration(milliseconds);
-    timerStoppedReturnValue = stoppedReturnValue;
-    reset();
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(milliseconds, MILLISECONDS, RUNNING, true, stoppedReturnValue, false, GLOBAL_RESET);
 }
 
 BlockNot::BlockNot(const unsigned long milliseconds, const unsigned long stoppedReturnValue, const BlockNotState state) {
-    baseUnits = MILLISECONDS;
-    timerState = state;
-    if(timerState == STOPPED)
-        stop();
-    global = (global == NO_GLOBAL_RESET) ? NO_GLOBAL_RESET : GLOBAL_RESET;
-    initDuration(milliseconds);
-    timerStoppedReturnValue = stoppedReturnValue;
-    reset();
-    if (global == GLOBAL_RESET) addToTimerList();
-
+    init(milliseconds, MILLISECONDS, state, true, stoppedReturnValue, false, GLOBAL_RESET);
 }
 
 BlockNot::BlockNot(const unsigned long time, const unsigned long stoppedReturnValue, const BlockNotUnit units) {
-    baseUnits = units;
-    timerState = RUNNING;
-    global = (global == NO_GLOBAL_RESET) ? NO_GLOBAL_RESET : GLOBAL_RESET;
-    initDuration(time);
-    timerStoppedReturnValue = stoppedReturnValue;
-    reset();
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(time, units, RUNNING, true, stoppedReturnValue, false, GLOBAL_RESET);
 }
 
 BlockNot::BlockNot(const unsigned long time, const unsigned long stoppedReturnValue, const BlockNotUnit units, const BlockNotState state) {
-    baseUnits = units;
-    timerState = state;
-    global = (global == NO_GLOBAL_RESET) ? NO_GLOBAL_RESET : GLOBAL_RESET;
-    if(timerState == STOPPED)
-        stop();
-    initDuration(time);
-    timerStoppedReturnValue = stoppedReturnValue;
-    reset();
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(time, units, state, true, stoppedReturnValue, false, GLOBAL_RESET);
 }
 
 BlockNot::BlockNot(const unsigned long milliseconds, const unsigned long stoppedReturnValue, const BlockNotGlobal globalReset) {
-    baseUnits = MILLISECONDS;
-    timerState = RUNNING;
-    initDuration(milliseconds);
-    timerStoppedReturnValue = stoppedReturnValue;
-    reset();
-    global = globalReset;
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(milliseconds, MILLISECONDS, RUNNING, true, stoppedReturnValue, true, globalReset);
 }
 
 BlockNot::BlockNot(const unsigned long milliseconds, const unsigned long stoppedReturnValue, const BlockNotGlobal globalReset, const BlockNotState state) {
-    baseUnits = MILLISECONDS;
-    timerState = state;
-    if(timerState == STOPPED)
-        stop();
-    initDuration(milliseconds);
-    timerStoppedReturnValue = stoppedReturnValue;
-    reset();
-    global = globalReset;
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(milliseconds, MILLISECONDS, state, true, stoppedReturnValue, true, globalReset);
 }
 
 BlockNot::BlockNot(const unsigned long time, const unsigned long stoppedReturnValue, const BlockNotUnit units, const BlockNotGlobal globalReset) {
-    baseUnits = units;
-    timerState = RUNNING;
-    initDuration(time);
-    timerStoppedReturnValue = stoppedReturnValue;
-    reset();
-    global = globalReset;
-    if (global == GLOBAL_RESET) addToTimerList();
+    init(time, units, RUNNING, true, stoppedReturnValue, true, globalReset);
 }
 
 BlockNot::BlockNot(const unsigned long time, const unsigned long stoppedReturnValue, const BlockNotUnit units, const BlockNotGlobal globalReset, const BlockNotState state) {
-    baseUnits = units;
+    init(time, units, state, true, stoppedReturnValue, true, globalReset);
+}
+
+void BlockNot::init(const unsigned long time, const BlockNotUnit units, const BlockNotState state,
+                    const bool hasStoppedReturnValue, const unsigned long stoppedReturnValue,
+                    const bool hasGlobalParam, const BlockNotGlobal globalReset) {
+    baseUnits  = units;
     timerState = state;
-    if(timerState == STOPPED)
-        stop();
+    global     = hasGlobalParam ? globalReset : ((global == NO_GLOBAL_RESET) ? NO_GLOBAL_RESET : GLOBAL_RESET);
+    if (timerState == STOPPED) stop();
     initDuration(time);
-    timerStoppedReturnValue = stoppedReturnValue;
+    if (hasStoppedReturnValue) timerStoppedReturnValue = stoppedReturnValue;
     reset();
-    global = globalReset;
     if (global == GLOBAL_RESET) addToTimerList();
 }
 
@@ -217,40 +125,16 @@ void BlockNot::setDuration(const unsigned long time, BlockNotUnit inUnits, const
 }
 
 void BlockNot::addTime(const unsigned long time, const bool resetOption) {
-    unsigned long newDuration;
-    switch(baseUnits) {
-        case MICROSECONDS: {
-            newDuration = duration.micros + time;
-            if (newDuration < duration.micros) newDuration = 0xFFFFFFFFL;
-            duration.micros = newDuration;
-            break;
-        }
-        default: {
-            newDuration = duration.millis + time;
-            if (newDuration < duration.millis) newDuration = 0xFFFFFFFFL;
-            duration.millis = newDuration;
-            break;
-        }
-    }
+    unsigned long newDuration = duration + time;
+    if (newDuration < duration) newDuration = 0xFFFFFFFFUL;
+    duration = newDuration;
     if (resetOption) reset();
 }
 
 void BlockNot::takeTime(const unsigned long time, const bool resetOption) {
-    long newDuration;
-    switch(baseUnits) {
-        case MICROSECONDS: {
-            newDuration = duration.micros - time;
-            if (newDuration > duration.micros) newDuration = 0L;
-            duration.micros = newDuration;
-            break;
-        }
-        default: {
-            newDuration = duration.millis - time;
-            if (newDuration > duration.millis) newDuration = 0L;
-            duration.millis = newDuration;
-            break;
-        }
-    }
+    long newDuration = static_cast<long>(duration) - static_cast<long>(time);
+    if (newDuration < 0) newDuration = 0L;
+    duration = static_cast<unsigned long>(newDuration);
     if (resetOption) reset();
 }
 
@@ -265,20 +149,9 @@ bool BlockNot::triggered(const bool resetOption) {
 bool BlockNot::triggeredOnDuration(const bool allMissed) {
     const bool triggered = hasTriggered();
     if (triggered) {
-        unsigned long missedDurations;
-        switch(baseUnits) {
-            case MICROSECONDS: {
-                missedDurations = timeSinceReset() / static_cast<unsigned long>(duration.micros);
-                break;
-            }
-            default: {
-                missedDurations = timeSinceReset() / static_cast<unsigned long>(duration.millis);
-                break;
-            }
-        }
-        totalMissedDurations += (allMissed ? missedDurations : 0);
-        const unsigned long newStartTime = getDurationTriggerStartTime();
-        reset(newStartTime);
+        const unsigned long missedDurations = timeSinceReset() / duration;
+        totalMissedDurations                += (allMissed ? missedDurations : 0);
+        reset(startTime + (missedDurations * duration));
     }
     if (totalMissedDurations > 0 && allMissed) {
         totalMissedDurations--;
@@ -292,7 +165,7 @@ bool BlockNot::notTriggered() {
 }
 
 bool BlockNot::firstTrigger() {
-    if(onceTriggered) {
+    if (onceTriggered) {
         return firstTriggerResponse;
     }
     if (hasTriggered()) {
@@ -311,24 +184,12 @@ void BlockNot::setFirstTriggerResponse(const bool response) {
 }
 
 unsigned long BlockNot::getNextTriggerTime() const {
-    cTime nextTrigger;
     if (triggerOnNext) {
-        nextTrigger.micros = micros();
-        nextTrigger.millis = millis();
+        // Matches the pre-existing cTime-backed behavior: writing micros() then millis()
+        // into the same shared value meant only the millis() write ever survived.
+        return convertValue(millis(), MILLISECONDS, baseUnits);
     }
-    else {
-        switch(baseUnits) {
-            case MICROSECONDS: {
-                nextTrigger.micros = startTime + duration.micros;
-                break;
-            }
-            default: {
-                nextTrigger.millis = startTime + duration.millis;
-                break;
-            }
-        }
-    }
-    return convertUnits(nextTrigger);
+    return convertUnits(startTime + duration);
 }
 
 unsigned long BlockNot::getTimeUntilTrigger() const {
@@ -336,34 +197,11 @@ unsigned long BlockNot::getTimeUntilTrigger() const {
 }
 
 unsigned long BlockNot::getStartTime() const {
-    cTime sTime;
-    switch(baseUnits) {
-        case MICROSECONDS: {
-            sTime.micros = startTime;
-            break;
-        }
-        default: {
-            sTime.millis = startTime;
-            break;
-        }
-    }
-    return convertUnits(sTime);
+    return convertUnits(startTime);
 }
 
 unsigned long BlockNot::getStartTime(const BlockNotUnit units) const {
-    cTime timeValue;
-    timeValue.micros = startTime;
-    switch(units) {
-        case MINUTES:
-            return timeValue.minutes;
-        case SECONDS:
-            return timeValue.seconds;
-        case MILLISECONDS:
-            return timeValue.millis;
-        case MICROSECONDS:
-            return timeValue.micros;
-    }
-    return 0L;
+    return convertValue(startTime, nativeUnit(), units);
 }
 
 unsigned long BlockNot::getDuration() const {
@@ -375,22 +213,16 @@ unsigned long BlockNot::lastTriggerDuration() const {
 }
 
 String BlockNot::getUnits() const {
-    return (baseUnits == SECONDS) ? "Seconds" : (baseUnits == MILLISECONDS) ?  "Milliseconds" : "Microseconds";
+    switch (baseUnits) {
+        case SECONDS:      return "Seconds";
+        case MILLISECONDS: return "Milliseconds";
+        case MINUTES:      return "Minutes";
+        default:           return "Microseconds";
+    }
 }
 
 unsigned long BlockNot::getTimeSinceLastReset() const {
-    cTime timeLapsed;
-    switch(baseUnits) {
-        case MICROSECONDS: {
-            timeLapsed.micros = timeSinceReset();
-            break;
-        }
-        default: {
-            timeLapsed.millis = timeSinceReset();
-            break;
-        }
-    }
-    return (timerState == RUNNING) ? convertUnits(timeLapsed) : timerStoppedReturnValue;
+    return (timerState == RUNNING) ? convertUnits(timeSinceReset()) : timerStoppedReturnValue;
 }
 
 void BlockNot::setStoppedReturnValue(const unsigned long stoppedReturnValue) {
@@ -398,16 +230,16 @@ void BlockNot::setStoppedReturnValue(const unsigned long stoppedReturnValue) {
 }
 
 void BlockNot::start(const bool resetOption) {
-    if(resetOption)
+    if (resetOption)
         reset();
     else {
-        switch(baseUnits) {
+        switch (baseUnits) {
             case MICROSECONDS: {
-                startTime = micros() - stopTime.micros;
+                startTime += micros() - stopTime;
                 break;
             }
             default: {
-                startTime = millis() - stopTime.millis;
+                startTime += millis() - stopTime;
                 break;
             }
         }
@@ -417,77 +249,39 @@ void BlockNot::start(const bool resetOption) {
 
 void BlockNot::stop() {
     timerState = STOPPED;
-    switch(baseUnits) {
+    switch (baseUnits) {
         case MICROSECONDS: {
-            stopTime.micros = micros();
+            stopTime = micros();
             break;
         }
         default: {
-            stopTime.millis = millis();
+            stopTime = millis();
             break;
         }
     }
 }
 
-bool BlockNot::isRunning() const {return timerState == RUNNING;}
+bool BlockNot::isRunning() const { return timerState == RUNNING; }
 
-bool BlockNot::isStopped() const {return timerState == STOPPED;}
+bool BlockNot::isStopped() const { return timerState == STOPPED; }
 
 void BlockNot::toggle() {
-    if(timerState == RUNNING)
+    if (timerState == RUNNING)
         timerState = STOPPED;
     else
         timerState = RUNNING;
 }
 
 unsigned long BlockNot::convert(const unsigned long value, const BlockNotUnit units) const {
-    cTime timeValue;
-    unsigned long result = 0L;
-    switch(baseUnits) {
-        case MINUTES: {
-            timeValue.minutes = value;
-            break;
-        }
-        case SECONDS: {
-            timeValue.seconds = value;
-            break;
-        }
-        case MILLISECONDS: {
-            timeValue.millis = value;
-            break;
-        }
-        case MICROSECONDS: {
-            timeValue.micros = value;
-            break;
-        }
-    }
-    switch(units) {
-        case MINUTES: {
-            result= timeValue.minutes;
-            break;
-        }
-        case SECONDS: {
-            result = timeValue.seconds;
-            break;
-        }
-        case MILLISECONDS: {
-            result = timeValue.millis;
-            break;
-        }
-        case MICROSECONDS: {
-            result = timeValue.micros;
-            break;
-        }
-    }
-    return result;
+    return convertValue(value, baseUnits, units);
 }
 
 void BlockNot::switchTo(const BlockNotUnit units) { baseUnits = units; }
 
 void BlockNot::reset(const unsigned long newStartTime) {
     unsigned long finalStartTime = newStartTime;
-    if(finalStartTime == 0) {
-        switch(baseUnits) {
+    if (finalStartTime == 0) {
+        switch (baseUnits) {
             case MICROSECONDS: {
                 finalStartTime = micros() + microsOffset;
                 break;
@@ -503,19 +297,38 @@ void BlockNot::reset(const unsigned long newStartTime) {
     resetTimer(finalStartTime);
 }
 
+void BlockNot::resetToCapturedTime(const unsigned long capturedMillis, const unsigned long capturedMicros) {
+    unsigned long finalStartTime;
+    switch (baseUnits) {
+        case MICROSECONDS: {
+            finalStartTime = capturedMicros + microsOffset;
+            break;
+        }
+        default: {
+            finalStartTime = capturedMillis + millisOffset;
+            if (speedCompensation)
+                delay(compTime);
+            break;
+        }
+    }
+    resetTimer(finalStartTime);
+}
+
 void BlockNot::setMillisOffset(const unsigned long offset) {
-    long delta = offset - millisOffset;
-    startTime = startTime + delta;
+    long delta   = offset - millisOffset;
+    startTime    = startTime + delta;
     millisOffset = offset;
 }
 
 void BlockNot::setMicrosOffset(const unsigned long offset) {
+    long delta   = offset - microsOffset;
+    startTime    = startTime + delta;
     microsOffset = offset;
 }
 
 void BlockNot::speedComp(const unsigned long time) {
     speedCompensation = true;
-    compTime = time;
+    compTime          = time;
 }
 
 void BlockNot::disableSpeedComp() {
@@ -530,110 +343,31 @@ BlockNotUnit BlockNot::getBaseUnits() const {
     return baseUnits;
 }
 
-void BlockNot::getHelp(Print &output, const bool haltCode) {
-    output.println("\n\nThe following macros can be used for coding simplicity and to produce more readable code:\n");
-    output.println("Macro\t\t\t\tMethod Called");
-    output.println("-------------------------------------------------------");
-    output.println("ELAPSED\t\t\t\tgetTimeSinceLastReset()");
-    output.println("REMAINING\t\t\tgetTimeUntilTrigger()");
-    output.println("DURATION\t\t\tgetDuration()");
-    output.println("GET_UNITS\t\t\tgetUnits()");
-    output.println("GET_START_TIME\t\t\tgetStartTime()");
-    output.println("TRIGGERED\t\t\ttriggered()");
-    output.println("LAST_TRIGGER_DURATION\t\tlastTriggerDuration()");
-    output.println("HAS_TRIGGERED\t\t\ttriggered(NO_RESET)");
-    output.println("TRIGGER_NEXT\t\t\ttriggerNext()");
-    output.println("TRIGGERED_ON_DURATION\t\ttriggeredOnDuration");
-    output.println("TRIGGERED_ON_DURATION(ALL)\ttriggeredOnDuration(ALL)");
-    output.println("NOT_TRIGGERED\t\t\tnotTriggered()");
-    output.println("FIRST_TRIGGER\t\t\tfirstTrigger()");
-    output.println("RESET\t\t\t\treset()");
-    output.println("RESET_TIMERS\t\t\tresetAllTimers()");
-    output.println("START\t\t\t\tstart()");
-    output.println("START(WITH_RESET)\t\tstart(WITH_RESET)");
-    output.println("STOP\t\t\t\tstop()");
-    output.println("ISRUNNING\t\t\tisRunning()");
-    output.println("ISSTOPPED\t\t\tisStopped()");
-    output.println("TOGGLE\t\t\t\ttoggle()");
-    output.println("\nYou use macros like you would a method call only no neeed for passing arguments unless the macro");
-    output.println("explicitely supports it:\n");
-    output.println("if (myTimer.TRIGGERED) {");
-    output.println("\t//My Code");
-    output.println("}");
-    output.println(" ");
-    output.println(" ");
-    if (haltCode) {
-        while(true){}
-    }
-}
-
-void BlockNot::getHelp(const bool haltCode) {
-    getHelp(Serial, haltCode);
-}
-
 /**
  * Private Methods
  */
 
 void BlockNot::initDuration(const unsigned long time) {
-    switch(baseUnits) {
-        case MINUTES: {
-            duration.minutes = time;
-            break;
-        }
-        case SECONDS: {
-            duration.seconds = time;
-            break;
-        }
-        case MILLISECONDS: {
-            duration.millis = time;
-            break;
-        }
-        case MICROSECONDS: {
-            duration.micros = time;
-            break;
-        }
-    }
+    duration = convertValue(time, baseUnits, nativeUnit());
 }
 
 void BlockNot::initDuration(const unsigned long time, const BlockNotUnit inUnits) {
-    switch(inUnits) {
-        case MICROSECONDS:
-            duration.micros = time;
-            break;
-        case MILLISECONDS:
-            duration.millis = time;
-            break;
-        case SECONDS:
-            duration.seconds = time;
-            break;
-        case MINUTES: {
-            duration.minutes = time;
-            break;
-        }
-    }
+    duration = convertValue(time, inUnits, nativeUnit());
 }
 
 void BlockNot::resetTimer(const unsigned long newStartTime) {
-    startTime = newStartTime;
+    startTime     = newStartTime;
     triggerOnNext = false;
     onceTriggered = false;
 }
 
 unsigned long BlockNot::timeSinceReset() const {
-    unsigned long result;
-    unsigned long millisBase = millisOffset + millis();
-    switch(baseUnits) {
-        case MICROSECONDS: {
-            result = microsOffset + micros() - startTime;
-            break;
-        }
-        default: {
-            result = millisBase - startTime;
-            break;
-        }
+    switch (baseUnits) {
+        case MICROSECONDS:
+            return microsOffset + micros() - startTime;
+        default:
+            return millisOffset + millis() - startTime;
     }
-    return result;
 }
 
 bool BlockNot::hasTriggered() {
@@ -641,103 +375,68 @@ bool BlockNot::hasTriggered() {
         triggerOnNext = false;
         return true;
     }
-    bool triggered;
     const unsigned long sinceReset = timeSinceReset();
-    switch(baseUnits) {
-        case MICROSECONDS: {
-            triggered = sinceReset >= static_cast<unsigned long>(duration.micros);
-            break;
-        }
-        default: {
-            triggered = sinceReset >= static_cast<unsigned long>(duration.millis);
-            break;
-        }
-    }
-    if(triggered)
+    const bool triggered           = sinceReset >= duration;
+    if (triggered)
         lastDuration = sinceReset;
     return triggered;
 }
 
-bool BlockNot::hasNotTriggered() const {
-    bool notTriggered;
-    switch(baseUnits) {
-        case MICROSECONDS:
-            notTriggered = timeSinceReset() < static_cast<unsigned long>(duration.micros);
-            break;
-        default:
-            notTriggered = timeSinceReset() < static_cast<unsigned long>(duration.millis);
-            break;
-    }
-    return notTriggered;
-}
-
 unsigned long BlockNot::timeTillTrigger() const {
-    const unsigned long sinceReset = timeSinceReset();
     unsigned long tillTrigger = 0L;
     if (!triggerOnNext) {
-        cTime triggerTime;
-        switch(baseUnits) {
-            case MICROSECONDS: {
-                triggerTime.micros = (sinceReset < duration.micros) ? static_cast<unsigned long>(duration.micros - sinceReset) : 0L;
-                tillTrigger = (timerState == RUNNING) ? convertUnits(triggerTime) : timerStoppedReturnValue;
-                break;
-            }
-            default: {
-                triggerTime.millis = (sinceReset < duration.millis) ? static_cast<unsigned long>(duration.millis - sinceReset) : 0L;
-                tillTrigger = (timerState == RUNNING) ? convertUnits(triggerTime) : timerStoppedReturnValue;
-                break;
-            }
-        }
+        const unsigned long sinceReset      = timeSinceReset();
+        const unsigned long remainingNative = (sinceReset < duration) ? (duration - sinceReset) : 0UL;
+        tillTrigger                         = (timerState == RUNNING) ? convertUnits(remainingNative) : timerStoppedReturnValue;
     }
     return tillTrigger;
 }
 
-unsigned long BlockNot::remaining() const {
-    const unsigned long timePassed = timeSinceReset();
-    unsigned long remain = 0L;
-    if (!triggerOnNext) {
-        switch(baseUnits) {
-            case MICROSECONDS: {
-                remain = (timePassed < duration.micros) ? (static_cast<unsigned long>(duration.micros) - timePassed) : 0;
-                break;
-            }
-            default: {
-                remain = (timePassed < duration.millis) ? (static_cast<unsigned long>(duration.millis) - timePassed) : 0;
-                break;
-            }
-        }
-    }
-    return remain;
+BlockNotUnit BlockNot::nativeUnit() const {
+    return (baseUnits == MICROSECONDS) ? MICROSECONDS : MILLISECONDS;
 }
 
-unsigned long BlockNot::getDurationTriggerStartTime() const {
-    unsigned long durationStartTime;
-    switch(baseUnits) {
-        case MICROSECONDS: {
-            durationStartTime = startTime + ((timeSinceReset() / static_cast<unsigned long>(duration.micros)) * static_cast<unsigned long>(duration.micros));
-            break;
-        }
-        default: {
-            durationStartTime = startTime + ((timeSinceReset() / static_cast<unsigned long>(duration.millis)) * static_cast<unsigned long>(duration.millis));
-            break;
-        }
+unsigned long BlockNot::convertValue(const unsigned long value, const BlockNotUnit fromUnits, const BlockNotUnit toUnits) {
+    if (fromUnits == toUnits) return value;
+    switch (fromUnits) {
+        case MICROSECONDS:
+            switch (toUnits) {
+                case MILLISECONDS: return value / 1000UL;
+                case SECONDS: return value / 1000000UL;
+                default: return value / 60000000UL; // MINUTES
+            }
+        case MILLISECONDS:
+            switch (toUnits) {
+                case MICROSECONDS: return value * 1000UL;
+                case SECONDS: return value / 1000UL;
+                default: return value / 60000UL; // MINUTES
+            }
+        case SECONDS:
+            switch (toUnits) {
+                case MICROSECONDS: return value * 1000000UL;
+                case MILLISECONDS: return value * 1000UL;
+                default: return value / 60UL; // MINUTES
+            }
+        default: // MINUTES
+            switch (toUnits) {
+                case MICROSECONDS: return value * 60000000UL;
+                case MILLISECONDS: return value * 60000UL;
+                default: return value * 60UL; // SECONDS
+            }
     }
-    return durationStartTime;
 }
 
-unsigned long BlockNot::convertUnits(const cTime &timeValue) const {
-    return baseUnits == MINUTES ? timeValue.minutes :
-           baseUnits == SECONDS ? timeValue.seconds :
-           baseUnits == MILLISECONDS ? timeValue.millis :
-           timeValue.micros;
+unsigned long BlockNot::convertUnits(const unsigned long nativeValue) const {
+    return convertValue(nativeValue, nativeUnit(), baseUnits);
 }
 
 void BlockNot::addToTimerList() {
     if (firstTimer == nullptr) {
         firstTimer = currentTimer = this;
-    } else {
+    }
+    else {
         currentTimer->nextTimer = this;
-        currentTimer = this;
+        currentTimer            = this;
     }
     this->nextTimer = nullptr;
 }
@@ -748,8 +447,17 @@ void BlockNot::addToTimerList() {
 
 void resetAllTimers(const unsigned long newStartTime) {
     BlockNot *current = BlockNot::firstTimer;
+    if (newStartTime != 0) {
+        while (current != nullptr) {
+            current->reset(newStartTime);
+            current = current->nextTimer;
+        }
+        return;
+    }
+    const unsigned long capturedMillis = millis();
+    const unsigned long capturedMicros = micros();
     while (current != nullptr) {
-        current->reset(newStartTime);
+        current->resetToCapturedTime(capturedMillis, capturedMicros);
         current = current->nextTimer;
     }
 }

@@ -22,13 +22,13 @@
  * Macros - their usage and significance is described in README.md
  */
 
-enum BlockNotUnit {
+enum BlockNotUnit : uint8_t {
     mic_cTime, mil_cTime, sec_cTime, min_cTime
 };
-enum BlockNotGlobal {
+enum BlockNotGlobal : uint8_t {
     yes, no
 };
-enum BlockNotState {
+enum BlockNotState : uint8_t {
     running, stopped
 };
 
@@ -50,50 +50,23 @@ enum BlockNotState {
 #define GET_UNITS                   getUnits()
 #define GET_START_TIME              getStartTime()
 
-#ifdef __GNUC__ // GCC or Clang
-    #define DONE triggered()
-    #warning "DONE is deprecated and will be removed in a future release. Use TRIGGERED instead."
-    #define TIME_PASSED getTimeSinceLastReset()
-    #warning "WARNING: TIME_PASSED is deprecated and will be removed in a future release. Use ELAPSED instead."
-    #define TIME_SINCE_RESET getTimeSinceLastReset()
-    #warning "WARNING: TIME_SINCE_RESET is deprecated and will be removed in a future release. Use ELAPSED instead."
-    #define TIME_TILL_TRIGGER getTimeUntilTrigger()
-    #warning "WARNING: TIME_TILL_TRIGGER is deprecated and will be removed in a future release. Use REMAINING instead."
-    #define TRIGGERED_ON_MARK triggeredOnDuration()
-    #warning "WARNING: TRIGGERED_ON_MARK is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION instead."
-    #define NOT_DONE notTriggered()
-    #warning "WARNING: NOT_DONE is deprecated and will be removed in a future release. Use NOT_TRIGGERED instead."
-    #define ISSTARTED isRunning()
-    #warning "WARNING: ISSTARTED is deprecated and will be removed in a future release. Use ISRUNNING instead."
-    #define TRIGGERED_ON_DURATION_ALL triggeredOnDuration(ALL)
-    #warning "WARNING: TRIGGERED_ON_DURATION_ALL is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION(ALL) instead."
-    #define TRIGGERED_ALL triggeredOnDuration(ALL)
-    #warning "WARNING: TRIGGERED_ALL is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION(ALL) instead."
-    #define START_RESET start(WITH_RESET)
-    #warning "WARNING: START_RESET is deprecated and will be removed in a future release. Use START(WITH_RESET) instead."
-#elif defined(_MSC_VER) // Microsoft Visual Studio
-    #define DONE (__pragma(message("WARNING: DONE is deprecated and will be removed in a future release. Use TRIGGERED instead.")), triggered())
-    #define TIME_PASSED (__pragma(message("WARNING: TIME_PASSED is deprecated and will be removed in a future release. Use ELAPSED instead.")), getTimeSinceLastReset())
-    #define TIME_SINCE_RESET (__pragma(message("WARNING: TIME_SINCE_RESET is deprecated and will be removed in a future release. Use ELAPSED instead.")), getTimeSinceLastReset())
-    #define TIME_TILL_TRIGGER (__pragma(message("WARNING: TIME_TILL_TRIGGER is deprecated and will be removed in a future release. Use REMAINING instead.")), getTimeUntilTrigger())
-    #define TRIGGERED_ON_MARK (__pragma(message("WARNING: TRIGGERED_ON_MARK is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION instead.")), triggeredOnDuration())
-    #define TRIGGERED_ON_DURATION_ALL (__pragma(message("WARNING: TRIGGERED_ON_DURATION_ALL is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION(ALL) instead.")), triggeredOnDuration(ALL))
-    #define TRIGGERED_ALL (__pragma(message("WARNING: TRIGGERED_ALL is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION(ALL) instead.")), triggeredOnDuration(ALL))
-    #define NOT_DONE (__pragma(message("WARNING: NOT_DONE is deprecated and will be removed in a future release. Use NOT_TRIGGERED instead.")), notTriggered())
-    #define START_RESET (__pragma(message("WARNING: START_RESET is deprecated and will be removed in a future release. Use START(WITH_RESET) instead.")), start(WITH_RESET))
-    #define ISSTARTED (__pragma(message("WARNING: ISSTARTED is deprecated and will be removed in a future release. Use ISRUNNING instead.")), isRunning())
-#else
-    #define DONE triggered()
-    #define TIME_PASSED getTimeSinceLastReset()
-    #define TIME_SINCE_RESET getTimeSinceLastReset()
-    #define TIME_TILL_TRIGGER getTimeUntilTrigger()
-    #define TRIGGERED_ON_MARK triggeredOnDuration()
-    #define NOT_DONE notTriggered()
-    #define ISSTARTED isRunning()
-    #define TRIGGERED_ON_DURATION_ALL triggeredOnDuration(ALL)
-    #define TRIGGERED_ALL triggeredOnDuration(ALL)
-    #define START_RESET start(WITH_RESET)
-#endif
+/**
+ * Deprecated macros. Each aliases to a tiny [[deprecated]]-attributed wrapper method
+ * (defined on BlockNot below) instead of calling the warning directly here, so that the
+ * compiler only warns when a sketch actually uses one of these macros - not on every
+ * translation unit that merely includes this header. [[deprecated]] is standard C++14 and
+ * understood identically by GCC, Clang and MSVC, so no compiler-specific branching is needed.
+ */
+#define DONE                        deprecatedDone()
+#define TIME_PASSED                 deprecatedTimePassed()
+#define TIME_SINCE_RESET            deprecatedTimeSinceReset()
+#define TIME_TILL_TRIGGER           deprecatedTimeTillTrigger()
+#define TRIGGERED_ON_MARK           deprecatedTriggeredOnMark()
+#define NOT_DONE                    deprecatedNotDone()
+#define ISSTARTED                   deprecatedIsStarted()
+#define TRIGGERED_ON_DURATION_ALL   deprecatedTriggeredOnDurationAll()
+#define TRIGGERED_ALL               deprecatedTriggeredAll()
+#define START_RESET                 deprecatedStartReset()
 
 #define TRIGGERED                   triggered()
 #define LAST_TRIGGER_DURATION       lastTriggerDuration()
@@ -111,7 +84,7 @@ enum BlockNotState {
 #define TOGGLE                      toggle()
 
 class BlockNot {
-#define TIME_PASSED getTimeSinceLastReset()
+    friend void resetAllTimers(unsigned long newStartTime);
 
 public:
     /**
@@ -223,84 +196,39 @@ public:
 
     BlockNotUnit getBaseUnits() const;
 
-    static void getHelp(Print &output, bool haltCode = false);
+    /**
+     * Deprecated macro shims - see the macro definitions above. Not intended to be called
+     * directly; use the replacement named in each deprecation message instead.
+     */
+    [[deprecated("DONE is deprecated and will be removed in a future release. Use TRIGGERED instead.")]]
+    bool deprecatedDone() { return triggered(); }
 
-    static void getHelp(bool haltCode = false);
+    [[deprecated("TIME_PASSED is deprecated and will be removed in a future release. Use ELAPSED instead.")]]
+    unsigned long deprecatedTimePassed() { return getTimeSinceLastReset(); }
 
-    class cTime {
-    public:
-        double seconds = 0.0; // Central storage for time in seconds
+    [[deprecated("TIME_SINCE_RESET is deprecated and will be removed in a future release. Use ELAPSED instead.")]]
+    unsigned long deprecatedTimeSinceReset() { return getTimeSinceLastReset(); }
 
-        // Class for milliseconds
-        class milli_t {
-            double &seconds;
+    [[deprecated("TIME_TILL_TRIGGER is deprecated and will be removed in a future release. Use REMAINING instead.")]]
+    unsigned long deprecatedTimeTillTrigger() { return getTimeUntilTrigger(); }
 
-        public:
-            milli_t(double &s) : seconds(s) {
-            }
+    [[deprecated("TRIGGERED_ON_MARK is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION instead.")]]
+    bool deprecatedTriggeredOnMark() { return triggeredOnDuration(); }
 
-            milli_t &operator=(double ms) {
-                seconds = ms * 0.001; // Convert milliseconds to seconds
-                return *this;
-            }
+    [[deprecated("NOT_DONE is deprecated and will be removed in a future release. Use NOT_TRIGGERED instead.")]]
+    bool deprecatedNotDone() { return notTriggered(); }
 
-            operator double() const {
-                return seconds * 1000.0; // Convert seconds to milliseconds
-            }
-        };
+    [[deprecated("ISSTARTED is deprecated and will be removed in a future release. Use ISRUNNING instead.")]]
+    bool deprecatedIsStarted() const { return isRunning(); }
 
-        // Class for microseconds
-        class micro_t {
-            double &seconds;
+    [[deprecated("TRIGGERED_ON_DURATION_ALL is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION(ALL) instead.")]]
+    bool deprecatedTriggeredOnDurationAll() { return triggeredOnDuration(ALL); }
 
-        public:
-            micro_t(double &s) : seconds(s) {
-            }
+    [[deprecated("TRIGGERED_ALL is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION(ALL) instead.")]]
+    bool deprecatedTriggeredAll() { return triggeredOnDuration(ALL); }
 
-            micro_t &operator=(double us) {
-                seconds = us * 0.000001; // Convert microseconds to seconds
-                return *this;
-            }
-
-            operator double() const {
-                return seconds * 1000000.0; // Convert seconds to microseconds
-            }
-        };
-
-        // Class for minutes
-        class minutes_t {
-            double &seconds;
-
-        public:
-            minutes_t(double &s) : seconds(s) {
-            }
-
-            minutes_t &operator=(double mins) {
-                seconds = mins * 60.0; // Convert minutes to seconds
-                return *this;
-            }
-
-            operator double() const {
-                return seconds / 60.0; // Convert seconds to minutes
-            }
-        };
-
-        // Accessors for helper classes
-
-        milli_t millis;
-        micro_t micros;
-        minutes_t minutes;
-
-        // Constructor
-        cTime() : millis(seconds), micros(seconds), minutes(seconds) {
-        }
-
-        // Getter for seconds
-        double getSeconds() const { return seconds; }
-
-        // Setter for seconds
-        void setSeconds(double s) { seconds = s; }
-    };
+    [[deprecated("START_RESET is deprecated and will be removed in a future release. Use START(WITH_RESET) instead.")]]
+    void deprecatedStartReset() { start(WITH_RESET); }
 
     static BlockNot *firstTimer;
     static BlockNot *currentTimer;
@@ -310,27 +238,39 @@ private:
     /**
      * Private Variables and Methods
      */
-    unsigned long startTime;
-    unsigned long millisOffset;
-    unsigned long microsOffset;
-    unsigned long timerStoppedReturnValue;
-    unsigned long lastDuration;
-    int totalMissedDurations;
-    bool onceTriggered;
-    bool triggerOnNext;
-    bool firstTriggerResponse;
-    bool speedCompensation;
-    unsigned long compTime;
-    unsigned long newStartTimeMillis;
-    unsigned long newStartTimeMicros;
+    /**
+     * 4-byte fields are grouped together, and the six 1-byte fields (four bools plus the two
+     * fixed-width enums below) are grouped together after them. This keeps struct padding to a
+     * single trailing gap instead of one padding gap per 1-byte field interleaved among 4-byte
+     * fields - on 32-bit targets where enums aren't packed to 1 byte by default (e.g. ESP32/RP2040),
+     * interleaving would otherwise silently erase the RAM savings from giving BlockNotUnit/
+     * BlockNotState an explicit uint8_t underlying type.
+     */
+    unsigned long startTime = 0;
+    unsigned long millisOffset = 0;
+    unsigned long microsOffset = 0;
+    unsigned long timerStoppedReturnValue = 0;
+    unsigned long lastDuration = 0;
+    unsigned long compTime = 0;
+    unsigned long duration = 0;
+    unsigned long stopTime = 0;
+    int totalMissedDurations = 0;
 
     static BlockNotGlobal global;
+    bool onceTriggered = false;
+    bool triggerOnNext = false;
+    bool firstTriggerResponse = false;
+    bool speedCompensation = false;
     BlockNotUnit baseUnits;
-    cTime duration;
-    cTime stopTime;
     BlockNotState timerState;
 
+    void init(unsigned long time, BlockNotUnit units, BlockNotState state,
+              bool hasStoppedReturnValue, unsigned long stoppedReturnValue,
+              bool hasGlobalParam, BlockNotGlobal globalReset);
+
     void resetTimer(unsigned long newStartTime);
+
+    void resetToCapturedTime(unsigned long capturedMillis, unsigned long capturedMicros);
 
     void initDuration(unsigned long time);
 
@@ -340,17 +280,23 @@ private:
 
     bool hasTriggered();
 
-    bool hasNotTriggered() const;
-
     void addToTimerList();
 
     unsigned long timeTillTrigger() const;
 
-    unsigned long remaining() const;
+    /**
+     * duration/startTime/stopTime are always stored in "native units" - the same unit
+     * that drives the timer's own clock (microseconds for a MICROSECONDS timer, milliseconds
+     * for everything else, matching the micros()/millis() split used throughout). nativeUnit()
+     * and convertValue() replace the old cTime double-backed representation with plain integer
+     * arithmetic - every ratio between MICROSECONDS/MILLISECONDS/SECONDS/MINUTES is an exact
+     * integer, so no floating point is needed anywhere in the class.
+     */
+    BlockNotUnit nativeUnit() const;
 
-    unsigned long getDurationTriggerStartTime() const;
+    static unsigned long convertValue(unsigned long value, BlockNotUnit fromUnits, BlockNotUnit toUnits);
 
-    unsigned long convertUnits(const cTime &timeValue) const;
+    unsigned long convertUnits(unsigned long nativeValue) const;
 };
 
 /**
