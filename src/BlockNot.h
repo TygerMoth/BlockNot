@@ -178,40 +178,6 @@ public:
 
     BlockNotUnit getBaseUnits() const;
 
-    /**
-     * Deprecated macro shims - see the macro definitions above. Not intended to be called
-     * directly; use the replacement named in each deprecation message instead.
-     */
-    [[deprecated("DONE is deprecated and will be removed in a future release. Use TRIGGERED instead.")]]
-    bool deprecatedDone() { return triggered(); }
-
-    [[deprecated("TIME_PASSED is deprecated and will be removed in a future release. Use ELAPSED instead.")]]
-    unsigned long deprecatedTimePassed() { return getTimeSinceLastReset(); }
-
-    [[deprecated("TIME_SINCE_RESET is deprecated and will be removed in a future release. Use ELAPSED instead.")]]
-    unsigned long deprecatedTimeSinceReset() { return getTimeSinceLastReset(); }
-
-    [[deprecated("TIME_TILL_TRIGGER is deprecated and will be removed in a future release. Use REMAINING instead.")]]
-    unsigned long deprecatedTimeTillTrigger() { return getTimeUntilTrigger(); }
-
-    [[deprecated("TRIGGERED_ON_MARK is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION instead.")]]
-    bool deprecatedTriggeredOnMark() { return triggeredOnDuration(); }
-
-    [[deprecated("NOT_DONE is deprecated and will be removed in a future release. Use NOT_TRIGGERED instead.")]]
-    bool deprecatedNotDone() { return notTriggered(); }
-
-    [[deprecated("ISSTARTED is deprecated and will be removed in a future release. Use ISRUNNING instead.")]]
-    bool deprecatedIsStarted() const { return isRunning(); }
-
-    [[deprecated("TRIGGERED_ON_DURATION_ALL is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION(ALL) instead.")]]
-    bool deprecatedTriggeredOnDurationAll() { return triggeredOnDuration(ALL); }
-
-    [[deprecated("TRIGGERED_ALL is deprecated and will be removed in a future release. Use TRIGGERED_ON_DURATION(ALL) instead.")]]
-    bool deprecatedTriggeredAll() { return triggeredOnDuration(ALL); }
-
-    [[deprecated("START_RESET is deprecated and will be removed in a future release. Use START(WITH_RESET) instead.")]]
-    void deprecatedStartReset() { start(WITH_RESET); }
-
     static BlockNot *firstTimer;
     static BlockNot *currentTimer;
     BlockNot *nextTimer;
