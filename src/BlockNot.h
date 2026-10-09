@@ -50,24 +50,6 @@ enum BlockNotState : uint8_t {
 #define GET_UNITS                   getUnits()
 #define GET_START_TIME              getStartTime()
 
-/**
- * Deprecated macros. Each aliases to a tiny [[deprecated]]-attributed wrapper method
- * (defined on BlockNot below) instead of calling the warning directly here, so that the
- * compiler only warns when a sketch actually uses one of these macros - not on every
- * translation unit that merely includes this header. [[deprecated]] is standard C++14 and
- * understood identically by GCC, Clang and MSVC, so no compiler-specific branching is needed.
- */
-#define DONE                        deprecatedDone()
-#define TIME_PASSED                 deprecatedTimePassed()
-#define TIME_SINCE_RESET            deprecatedTimeSinceReset()
-#define TIME_TILL_TRIGGER           deprecatedTimeTillTrigger()
-#define TRIGGERED_ON_MARK           deprecatedTriggeredOnMark()
-#define NOT_DONE                    deprecatedNotDone()
-#define ISSTARTED                   deprecatedIsStarted()
-#define TRIGGERED_ON_DURATION_ALL   deprecatedTriggeredOnDurationAll()
-#define TRIGGERED_ALL               deprecatedTriggeredAll()
-#define START_RESET                 deprecatedStartReset()
-
 #define TRIGGERED                   triggered()
 #define LAST_TRIGGER_DURATION       lastTriggerDuration()
 #define HAS_TRIGGERED               triggered(NO_RESET)
